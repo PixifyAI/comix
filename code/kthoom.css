@@ -6,13 +6,13 @@
 ::-webkit-scrollbar-thumb {
   border-radius: 4px;
   background-color: rgba(0,0,0,.5);
-  box-shadow: 0 0 1px rgba(255,255,255,.5);
+  box-shadow: 0 0 1px rgba(221,221,221,.5);
 }
 
 body {
   animation: fadeIn ease 1.5s;
-	background: #444;
-	color: white;
+	background: #333;
+	color: #ddd;
 	font-family: sans-serif;
 	margin: 0px;
   scroll-behavior: smooth;
@@ -39,7 +39,7 @@ body {
 #helpOverlay {
   border-radius: 1em;
   bottom: 0;
-  color: yellow;
+  color: #007fff;
   display: none;
   font-size: 1.2em;
   left: 0;
@@ -54,7 +54,7 @@ body {
 }
 
 #helpOverlayInner {
-  background-color: rgba(50, 50, 50, 0.95);
+  background-color: rgba(34, 34, 34, 0.95);
   bottom: 25px;
   left: 50px;
   right: 50px;
@@ -68,7 +68,7 @@ body {
 }
 
 .helpSection h2 {
-  color: orange;
+  color: #007fff;
   font-size: 18px;
   text-align: center;
 }
@@ -83,7 +83,7 @@ dl.helplist {
 }
 
 dl.helplist dt {
-  color: orange;
+  color: #007fff;
   flex: 0 0 33%;
   font-weight: bold;
   padding-bottom: 5px;
@@ -119,10 +119,10 @@ dl.helplist dd {
 }
 
 .navbutton {
-  background-color: black;
-  border-color: grey;
+  background-color: #222;
+  border-color: #888;
   border-radius: 5px;
-  color: grey;
+  color: #888;
   cursor: pointer;
   font-weight: bold;
   height: 2em;
@@ -132,13 +132,13 @@ dl.helplist dd {
 }
 
 .navbutton:disabled {
-  color: #444;
+  color: #333;
 }
 
 .navbutton:hover:not([disabled]), .navbutton:focus {
-  background-color: #444;
-  border-color: yellow;
-  color: yellow;
+  background-color: #333;
+  border-color: #007fff;
+  color: #007fff;
 }
 
 #close {
@@ -178,10 +178,10 @@ dl.helplist dd {
 /* Menu styling */
 
 .menuButton {
-  background-color: black;
-  border: solid 1px grey;
+  background-color: #222;
+  border: solid 1px #888;
   border-radius: 5px;
-  color: grey;
+  color: #888;
   cursor: pointer;
   display: inline-block;
   padding: 0;
@@ -191,8 +191,8 @@ dl.helplist dd {
 }
 
 .menuButton:hover, .menuButton:focus {
-  border: solid 1px yellow;
-  color: yellow;
+  border: solid 1px #007fff;
+  color: #007fff;
 }
 
 #menu {
@@ -206,7 +206,7 @@ dl.helplist dd {
 }
 
 .menuSeparator {
-  border-top: solid .1px yellow;
+  border-top: solid .1px #007fff;
 }
 
 span.subMenuArrow,
@@ -236,8 +236,8 @@ span.menuCheckmark {
 }
 
 ul.menuItems {
-  background-color: black;
-  border: solid 1px yellow;
+  background-color: #222;
+  border: solid 1px #007fff;
   border-radius: 5px 5px 5px 5px;
   left: 5px;
   list-style: none;
@@ -256,9 +256,9 @@ ul.menuItems li {
 }
 
 .menuItem {
-  background-color: black;
+  background-color: #222;
   border: none;
-  color: yellow;
+  color: #007fff;
   cursor: pointer;
   font-size: 1em;
   margin: 2px;
@@ -276,7 +276,7 @@ ul.menuItems li {
 }
 
 .menuItem:hover {
-  background-color: #444;
+  background-color: #333;
 }
 
 #menu-open-local-files input {
@@ -307,7 +307,7 @@ div.pageDiv {
   position: relative;
   top: 10px;
   background: #ccc;
-  color: black;
+  color: #222;
   margin-right: auto;
   margin-left: auto;
   padding: 10px;
@@ -315,7 +315,7 @@ div.pageDiv {
 }
 
 button:focus {
-  outline: solid 2px yellow;
+  outline: solid 2px #007fff;
 }
 
 #header.preview {
@@ -329,9 +329,9 @@ button:focus {
 
 /** Trays common styling */
 .tray {
-  border-color: grey;
+  border-color: #888;
   bottom: 1.5em;
-  color: grey;
+  color: #888;
   cursor: pointer;
   display: -ms-flex;
   display: -webkit-flex;
@@ -347,7 +347,7 @@ button:focus {
   -ms-align-self: center;
   -webkit-align-self: center;
   align-self: center;
-  background-color: black;
+  background-color: #222;
   border-color: inherit;
   border-style: solid;
   border-width: 1px;
@@ -362,7 +362,7 @@ button:focus {
 }
 
 .trayContents {
-  background-color: black;
+  background-color: #222;
   border-color: inherit;
   border-radius: 5px;
   border-style: solid;
@@ -373,17 +373,17 @@ button:focus {
   overflow-x: hidden;
   padding: 10px;
   padding-bottom: 0;
-  scrollbar-color: yellow #444;
+  scrollbar-color: #007fff #333;
   text-align: left;
   white-space: nowrap;
 }
 
 .trayContents::-webkit-scrollbar-track {
-  background-color: #444;
+  background-color: #333;
 }
 
 .trayContents::-webkit-scrollbar-thumb {
-  background-color: yellow;
+  background-color: #007fff;
 }
 
 /** Reading Stack */
@@ -400,7 +400,7 @@ button:focus {
 }
 
 #readingStackButton:disabled {
-  color: #444;
+  color: #333;
 }
 
 #readingStackButton.hidden {
@@ -408,9 +408,9 @@ button:focus {
 }
 
 #readingStackButton:hover:not([disabled]), #readingStackButton:focus {
-  background-color: #444;
-  color: yellow;
-  border-color: yellow;
+  background-color: #333;
+  color: #007fff;
+  border-color: #007fff;
 }
 
 #readingStackContents {
@@ -418,8 +418,8 @@ button:focus {
 }
 
 #readingStack.opened {
-  border-color: yellow;
-  color: yellow;
+  border-color: #007fff;
+  color: #007fff;
   margin-left: 0;
 }
 
@@ -432,16 +432,16 @@ button:focus {
 }
 
 .readingStackBook {
-  border-bottom: solid 1px grey;
-  border-top: solid 1px black;
+  border-bottom: solid 1px #888;
+  border-top: solid 1px #222;
   overflow: hidden;
   padding: 4px;
 }
 
 .readingStackBook:hover {
-  background-color: #444;
-  border-bottom: solid 1px yellow;
-  border-top: solid 1px yellow;
+  background-color: #333;
+  border-bottom: solid 1px #007fff;
+  border-top: solid 1px #007fff;
 }
 
 .readingStackFolder.collapsed div {
@@ -477,8 +477,8 @@ button:focus {
 }
 
 #metadataViewer.opened {
-  border-color: yellow;
-  color: yellow;
+  border-color: #007fff;
+  color: #007fff;
   margin-left: 0;
 }
 
@@ -495,7 +495,7 @@ button:focus {
 }
 
 .metadataTable tr {
-  border-bottom: solid 2px yellow;
+  border-bottom: solid 2px #007fff;
 }
 
 .metadataPropKey, .metadataPropValue {
@@ -510,10 +510,10 @@ button:focus {
 }
 
 .metadataButton {
-  background-color: black;
-  border: solid 1px grey;
+  background-color: #222;
+  border: solid 1px #888;
   border-radius: 5px;
-  color: grey;
+  color: #888;
   font-weight: bold;
   padding: 0;
   height: 2.5em;
@@ -522,16 +522,16 @@ button:focus {
 }
 
 .metadataButton:hover {
-  border-color: yellow;
-  color: yellow;
+  border-color: #007fff;
+  color: #007fff;
   cursor: pointer;
 }
 
 /* TODO: Remove current class and use focus for reading stack. */
 .menuItem:focus,
 .readingStackBook.current {
-  background-color: #cc2929;
-  outline: solid 2px yellow;
+  background-color: #0059b3;
+  outline: solid 2px #007fff;
 }
 
 .readingStackBook.loaded {
@@ -539,13 +539,13 @@ button:focus {
 }
 
 .readingStackBookCloseButton {
-  color: black;
+  color: #222;
   float: right;
   font-weight: bold;
 }
 
 .readingStackBookCloseButton:hover {
-  color: yellow;
+  color: #007fff;
 }
 
 [draggable] {
@@ -557,7 +557,7 @@ button:focus {
 }
 
 .dropTarget {
-  border-top: solid 2px yellow;
+  border-top: solid 2px #007fff;
 }
 
 .hideEnableDirectoryElem {

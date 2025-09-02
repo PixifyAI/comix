@@ -1,7 +1,7 @@
 {
-  "name": "Kthoom Comic Book Reader",
-  "description": "Open source comic book reader built using web technologies.",
-  "short_name": "kthoom",
+  "name": "ComiX",
+  "description": "A comic book reader.",
+  "short_name": "ComiX",
   "icons": [
     {
       "src": "images/logo-192.png",
@@ -25,7 +25,7 @@
     }
   ],
   "display": "standalone",
-  "background_color": "#444",
-  "theme_color": "#ffff00",
+  "background_color": "#222",
+  "theme_color": "#222",
   "start_url": "/kthoom/index.html"
 }
