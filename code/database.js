@@ -49,8 +49,14 @@ class Database {
       const transaction = this.db_.transaction([BOOK_STORE_NAME], 'readwrite');
       const store = transaction.objectStore(BOOK_STORE_NAME);
       const request = store.put(bookData, bookName);
-      request.onsuccess = () => resolve();
-      request.onerror = (event) => reject(event.target.error);
+      request.onsuccess = () => {
+        alert('Successfully saved book: ' + bookName);
+        resolve();
+      };
+      request.onerror = (event) => {
+        alert('Failed to save book: ' + event.target.error);
+        reject(event.target.error);
+      };
     });
   }
 
