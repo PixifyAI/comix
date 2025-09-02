@@ -118,6 +118,19 @@ export class KthoomApp {
   }
 
   /** @private */
+  async loadSavedBooks_() {
+    const bookNames = await db.getSavedBookNames();
+    if (bookNames && bookNames.length > 0) {
+      const books = [];
+      for (const bookName of bookNames) {
+        const book = new Book(bookName, bookName);
+        books.push(book);
+      }
+      this.loadMultipleBooks_(books);
+    }
+  }
+
+  /** @private */
   init_() {
     db.open();
     this.readingStack_.whenCurrentBookChanged(book => this.handleCurrentBookChanged_(book));
@@ -154,7 +167,13 @@ export class KthoomApp {
     document.addEventListener('keyup', (e) => this.keysHeld_[e.keyCode] = 0);
 
     this.loadSettings_();
-    this.parseParams_();
+
+    this.loadSavedBooks_().then(() => {
+      // If no books were loaded from the database, then parse the query params.
+      if (this.readingStack_.getNumberOfBooks() === 0) {
+        this.parseParams_();
+      }
+    });
 
     getElem('main-menu-button').focus();
 
@@ -1134,7 +1153,7 @@ export class KthoomApp {
    */
   loadSingleBookFromXHR(name, uri, expectedSize, headerMap = {}, preventSwitchingToBook = false) {
     const book = new Book(name, uri, undefined /** bookContainer */, expectedSize);
-    const bookPromise = book.loadFromXhr(headerMap);
+    const bookPromise = book.load();
     this.readingStack_.addBook(book, !preventSwitchingToBook);
     return bookPromise;
   }
@@ -1159,7 +1178,7 @@ export class KthoomApp {
 
     const request = new Request(uri, init);
     const book = new Book(name, request, undefined /** bookContainer */, expectedSize);
-    const bookPromise = book.loadFromFetch();
+    const bookPromise = book.load();
     this.readingStack_.addBook(book, !preventSwitchingToBook);
     return bookPromise;
   }

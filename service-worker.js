@@ -83,7 +83,40 @@ self.addEventListener('activate', (evt) => {
   );
 });
 
+import { db } from './code/database.js';
+
 self.addEventListener('fetch', (evt) => {
+  // Let the browser do its default thing
+  // for non-GET requests.
+  if (evt.request.method !== 'GET') {
+    return;
+  }
+
+  const url = new URL(evt.request.url);
+
+  // For the service worker, we will always try to get the latest version of the file.
+  if (url.origin === location.origin && url.pathname.endsWith('/service-worker.js')) {
+    return;
+  }
+
+  // For book files, we will try to get them from the database.
+  const isBookRequest = url.pathname.endsWith('.cbz') ||
+      url.pathname.endsWith('.cbr') ||
+      url.pathname.endsWith('.cbt') ||
+      url.pathname.endsWith('.epub');
+  if (isBookRequest) {
+    evt.respondWith((async () => {
+      await db.open();
+      const bookName = url.pathname.substring(url.pathname.lastIndexOf('/') + 1);
+      const bookData = await db.getBook(bookName);
+      if (bookData) {
+        return new Response(bookData);
+      }
+      return fetch(evt.request);
+    })());
+    return;
+  }
+
   evt.respondWith(
     caches.match(evt.request).then((response) => {
       return response || fetch(evt.request);
