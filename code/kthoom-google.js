@@ -238,7 +238,7 @@ function defineGoogleHooks() {
     // Load the Google API key if it exists.
     const gkey = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open('GET', 'gkey.json', true);
+      xhr.open('GET', 'gkey.json.disabled', true);
       xhr.responseType = 'json';
       xhr.onload = (evt) => {
         if (evt.target.status !== 200) {
