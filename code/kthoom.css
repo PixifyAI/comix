@@ -389,7 +389,7 @@ button:focus {
 /** Reading Stack */
 
 #readingStack {
-  margin-left: -21em;
+  margin-left: -61em;
   left: 0px;
 }
 
@@ -414,7 +414,7 @@ button:focus {
 }
 
 #readingStackContents {
-  width: 20em;
+  width: 60em;
 }
 
 #readingStack.opened {
@@ -562,4 +562,26 @@ button:focus {
 
 .hideEnableDirectoryElem {
   display: none;
+}
+
+.readingStackCovers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.readingStackBook img {
+  width: 150px;
+  height: 200px;
+  object-fit: cover;
+}
+
+.readingStackBook p {
+  margin: 0;
+  text-align: center;
+  white-space: normal;
+}
+
+.readingStackBook button {
+  margin-bottom: 10px;
 }
