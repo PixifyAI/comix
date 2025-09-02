@@ -123,8 +123,12 @@ export class KthoomApp {
     if (bookNames && bookNames.length > 0) {
       const books = [];
       for (const bookName of bookNames) {
-        const book = new Book(bookName);
-        books.push(book);
+        const bookData = await db.getBook(bookName);
+        if (bookData) {
+          const book = new Book(bookName);
+          book.loadFromArrayBuffer(bookName, bookData);
+          books.push(book);
+        }
       }
       this.loadMultipleBooks_(books);
     }
