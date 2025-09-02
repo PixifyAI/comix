@@ -272,6 +272,17 @@ export class Book extends EventTarget {
    * @returns {Promise<Book>}
    */
   async load() {
+    // Try loading from database first.
+    try {
+      const dbBook = await this.loadFromDatabase();
+      if (dbBook) {
+        return dbBook;
+      }
+    } catch (err) {
+      // ignore, and try other means.
+      console.log('Book not found in database, trying other means.');
+    }
+
     if (this.#request) {
       return this.loadFromFetch();
     } else if (this.#uri) {
@@ -449,6 +460,27 @@ export class Book extends EventTarget {
       };
       fr.readAsArrayBuffer(file);
     });
+  }
+
+  /**
+   * @returns {Promise<Book>} A Promise that returns this book when all bytes have been fed to it.
+   */
+  async loadFromDatabase() {
+    if (!this.#needsLoading) {
+      throw 'Cannot try to load from Database when the Book is already loading or loaded';
+    }
+
+    const bookName = this.getName();
+    const bookData = await db.getBook(bookName);
+    if (bookData) {
+      this.#needsLoading = false;
+      this.dispatchEvent(new BookLoadingStartedEvent(this));
+      this.#startBookBinding(bookName, bookData, bookData.byteLength);
+      this.#finishedLoading = true;
+      this.dispatchEvent(new BookLoadingCompleteEvent(this));
+      return this;
+    }
+    return null;
   }
 
   /**

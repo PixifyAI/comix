@@ -18,6 +18,7 @@ import { Key, Params, assert, getElem, serializeParamsToBrowser } from './common
 import { ImagePage, WebPShimImagePage } from './page.js';
 import { convertWebPtoJPG, convertWebPtoPNG } from './bitjs/image/webp-shim/webp-shim.js';
 import { MetadataViewer } from './metadata/metadata-viewer.js';
+import { db } from './database.js';
 
 if (window.kthoom == undefined) {
   window.kthoom = {};
@@ -118,10 +119,21 @@ export class KthoomApp {
 
   /** @private */
   init_() {
+    db.open();
     this.readingStack_.whenCurrentBookChanged(book => this.handleCurrentBookChanged_(book));
     // When the book has loaded (not unarchived), show the download menu option.
-    this.readingStack_.whenCurrentBookHasLoaded(() => {
+    this.readingStack_.whenCurrentBookHasLoaded(async () => {
       this.mainMenu_.showMenuItem('menu-download', true);
+      if (this.currentBook_) {
+        const savedBooks = await db.getSavedBookNames();
+        if (savedBooks.includes(this.currentBook_.getName())) {
+          this.mainMenu_.showMenuItem('menu-save-offline', false);
+          this.mainMenu_.showMenuItem('menu-delete-offline', true);
+        } else {
+          this.mainMenu_.showMenuItem('menu-save-offline', true);
+          this.mainMenu_.showMenuItem('menu-delete-offline', false);
+        }
+      }
     });
 
     this.initMenus_();
@@ -171,6 +183,7 @@ export class KthoomApp {
         case 'menu-open-local-files': this.openLocalFiles_(); closeMainMenu(); break;
         case 'menu-open-directory': this.openLocalDirectory_(); closeMainMenu(); break;
         case 'menu-open-url': this.openFileViaUrl_(); closeMainMenu(); break;
+        case 'menu-open-offline': this.openFromOffline_(); closeMainMenu(); break;
         case GOOGLE_MENU_ITEM_ID: this.openFileViaGoogleDrive_(); closeMainMenu(); break;
         case 'menu-open-ipfs-hash': this.openFileViaIPFS_(); closeMainMenu(); break;
       }
@@ -264,6 +277,8 @@ export class KthoomApp {
     this.mainMenu_.addEventListener(MenuEventType.ITEM_SELECTED, evt => {
       switch (evt.item.id) {
         case 'menu-download': this.downloadBook_(); break;
+        case 'menu-save-offline': this.saveBookForOffline_(); break;
+        case 'menu-delete-offline': this.deleteBookFromOffline_(); break;
         case 'menu-close-all': this.closeAll_(); break;
         case 'menu-help': this.#toggleHelpOpen(); break;
       }
@@ -1074,6 +1089,8 @@ export class KthoomApp {
       // Disable menu items that are not relevant when no book is opened.
       this.mainMenu_.showMenuItem('menu-download', false);
       this.mainMenu_.showMenuItem('menu-close-all', false);
+      this.mainMenu_.showMenuItem('menu-save-offline', false);
+      this.mainMenu_.showMenuItem('menu-delete-offline', false);
     }
   }
 
@@ -1091,6 +1108,52 @@ export class KthoomApp {
     const fileName = this.currentBook_.getFilename();
     link.download = fileName;
     link.click();
+  }
+
+  async saveBookForOffline_() {
+    if (this.currentBook_) {
+      try {
+        await db.saveBook(this.currentBook_);
+        alert(`${this.currentBook_.getName()} has been saved for offline use.`);
+        this.mainMenu_.showMenuItem('menu-save-offline', false);
+        this.mainMenu_.showMenuItem('menu-delete-offline', true);
+      } catch (err) {
+        console.error(err);
+        alert(`Could not save ${this.currentBook_.getName()} for offline use.`);
+      }
+    }
+  }
+
+  async deleteBookFromOffline_() {
+    if (this.currentBook_) {
+      try {
+        await db.deleteBook(this.currentBook_.getName());
+        alert(`${this.currentBook_.getName()} has been deleted from offline storage.`);
+        this.mainMenu_.showMenuItem('menu-save-offline', true);
+        this.mainMenu_.showMenuItem('menu-delete-offline', false);
+      } catch (err) {
+        console.error(err);
+        alert(`Could not delete ${this.currentBook_.getName()} from offline storage.`);
+      }
+    }
+  }
+
+  async openFromOffline_() {
+    const savedBooks = await db.getSavedBookNames();
+    if (savedBooks.length === 0) {
+      alert('No books saved for offline use.');
+      return;
+    }
+
+    // This is a bit of a hack. I'm using a prompt to ask the user to choose a book.
+    // A better UI would be a custom dialog. Given the tools, prompt is the easiest.
+    const bookName = prompt('Enter the name of the book to open:\n\n' + savedBooks.join('\n'));
+    if (bookName && savedBooks.includes(bookName)) {
+      const book = new Book(bookName);
+      this.readingStack_.addBook(book, true /* switchToIt */);
+    } else if (bookName) {
+      alert('Invalid book name');
+    }
   }
 
   /**
@@ -1337,6 +1400,8 @@ export class KthoomApp {
       this.bookViewer_.closeBook();
       // Download menu option is not available until the book is fully downloaded.
       this.mainMenu_.showMenuItem('menu-download', false);
+      this.mainMenu_.showMenuItem('menu-save-offline', false);
+      this.mainMenu_.showMenuItem('menu-delete-offline', false);
 
       // hide logo
       const bkgndEl = getElem('background');

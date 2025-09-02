@@ -26,6 +26,7 @@ let urlsToCache = [
   'code/comics/comic-book-page-sorter.js',
   'code/common/helpers.js',
   'code/common/dom-walker.js',
+  'code/database.js',
   'code/epub/epub-allowlists.js',
   'code/epub/epub-book-binder.js',
   'code/metadata/book-metadata.js',
@@ -63,23 +64,29 @@ let urlsToCache = [
 ];
 
 self.addEventListener('install', (evt) => {
-  evt.waitUntil(async () => {
-    const cache = await caches.open(CACHE_NAME);
-    await cache.addAll(urlsToCache);
-  });
+  evt.waitUntil(caches.open(CACHE_NAME).then((cache) => {
+    return cache.addAll(urlsToCache);
+  }));
+});
+
+self.addEventListener('activate', (evt) => {
+  evt.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
 });
 
 self.addEventListener('fetch', (evt) => {
-  evt.respondWith(async function () {
-    try {
-      const networkResponse = await fetch(evt.request);
-      if (evt.request.method === 'GET') {
-        const cache = await caches.open(CACHE_NAME);
-        evt.waitUntil(cache.put(evt.request, networkResponse.clone()));
-      }
-      return networkResponse;
-    } catch (err) {
-      return caches.match(evt.request);
-    }
-  }());
+  evt.respondWith(
+    caches.match(evt.request).then((response) => {
+      return response || fetch(evt.request);
+    })
+  );
 });
