@@ -80,6 +80,10 @@ export class BookViewer {
     this.wheelTimer_ = null;
     this.wheelTurnedPageAt_ = 0;
 
+    this.zoom_ = 1;
+    this.scale_ = 1;
+    this.pinch_start_dist_ = 0;
+
     this.throbberTimerId_ = null;
     this.throbbers_ = new Array(NUM_THROBBERS);
     this.throbberDirections_ = new Array(NUM_THROBBERS);
@@ -90,9 +94,20 @@ export class BookViewer {
     this.throbbingTime_ = 0;
 
     this.#initProgressMeter();
+
+    const bookContainer = getElem('bookContainer');
+    bookContainer.addEventListener('touchstart', (evt) => this.handleTouchStart(evt));
+    bookContainer.addEventListener('touchmove', (evt) => this.handleTouchMove(evt));
+    bookContainer.addEventListener('touchend', (evt) => this.handleTouchEnd(evt));
   }
 
   handleSwipeEvent(evt) {
+    if (evt.ctrlKey) {
+      this.zoom_ -= evt.deltaY * 0.01;
+      this.updateLayout();
+      return;
+    }
+
     if (!this.#currentBook) {
       return;
     }
@@ -349,6 +364,8 @@ export class BookViewer {
     // Rotate the book viewer viewport.
     const tr = `translate(${rotx-tx}, ${roty-ty}) rotate(${angle}) translate(${-rotx}, ${-roty})`;
     bvViewport.setAttribute('transform', tr);
+
+    getElem('bookContainer').style.transform = 'scale(' + (this.zoom_ * this.scale_) + ')';
 
     // Now size the top-level SVG element of the BookViewer.
     svgTop.style.display = '';
@@ -702,5 +719,30 @@ export class BookViewer {
     const progressBkgnd = getElem('progress_bkgnd');
     const progressBkgndWidth = progressBkgnd.width.baseVal.value;
     progressBkgnd.setAttribute('x', totalWidth - progressBkgndWidth);
+  }
+
+  handleTouchStart(evt) {
+    if (evt.touches.length === 2) {
+      evt.preventDefault();
+      this.pinch_start_dist_ = Math.hypot(
+          evt.touches[0].pageX - evt.touches[1].pageX,
+          evt.touches[0].pageY - evt.touches[1].pageY);
+    }
+  }
+
+  handleTouchMove(evt) {
+    if (evt.touches.length === 2) {
+      evt.preventDefault();
+      const dist = Math.hypot(
+          evt.touches[0].pageX - evt.touches[1].pageX,
+          evt.touches[0].pageY - evt.touches[1].pageY);
+      this.scale_ = dist / this.pinch_start_dist_;
+      this.updateLayout();
+    }
+  }
+
+  handleTouchEnd(evt) {
+    this.zoom_ = this.zoom_ * this.scale_;
+    this.scale_ = 1;
   }
 }
