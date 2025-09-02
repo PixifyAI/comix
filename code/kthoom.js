@@ -135,16 +135,8 @@ export class KthoomApp {
     db.open();
     this.readingStack_.whenCurrentBookChanged(book => this.handleCurrentBookChanged_(book));
     // When the book has loaded (not unarchived), show the download menu option.
-    this.readingStack_.whenCurrentBookHasLoaded(async () => {
+    this.readingStack_.whenCurrentBookHasLoaded(async (book) => {
       this.mainMenu_.showMenuItem('menu-download', true);
-      if (this.currentBook_) {
-        try {
-          await db.saveBook(this.currentBook_);
-          console.log(`${this.currentBook_.getName()} has been auto-saved for offline use.`);
-        } catch (err) {
-          console.error(`Could not auto-save ${this.currentBook_.getName()} for offline use.`, err);
-        }
-      }
     });
 
     this.initMenus_();
@@ -1336,6 +1328,13 @@ export class KthoomApp {
         /** @type {Book} */
         const book = evt.source;
         this.metadataViewer_.setBook(book);
+        if (book === this.currentBook_) {
+          db.saveBook(book).then(() => {
+            console.log(`${book.getName()} has been auto-saved for offline use.`);
+          }).catch(err => {
+            console.error(`Could not auto-save ${book.getName()} for offline use.`, err);
+          });
+        }
         break;
     }
   }
