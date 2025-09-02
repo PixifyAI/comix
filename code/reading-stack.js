@@ -45,6 +45,13 @@ export class ReadingStack {
      */
     this.folderCollapsedMap_ = new Map();
 
+    /**
+     * The currently selected collection, or null if in the default collection view.
+     * @type {BookContainer}
+     * @private
+     */
+    this.collectionState_ = null;
+
     getElem('readingStackButton').addEventListener('click', () => this.toggleOpen());
     getElem('readingStackOverlay').addEventListener('click', () => this.toggleOpen());
   }
@@ -138,6 +145,7 @@ export class ReadingStack {
     this.books_ = [];
     this.folderCollapsedMap_.clear();
     this.currentBookNum_ = -1;
+    this.collectionState_ = null;
     this.renderStack_();
   }
 
@@ -294,147 +302,130 @@ export class ReadingStack {
     }
   }
 
-  /**
-   * Toggles an individual folder expanded or collapsed. Updates the collapse
-   * map to remember which folders have been collapsed.
-   * @param {HTMLDivElement} folderDiv
-   * @param {BookContainer} folder
-   * @private
-   */
-  toggleFolderExpandCollapse_(folderDiv, folder) {
-    folderDiv.classList.toggle('collapsed');
-    this.folderCollapsedMap_.set(folder, folderDiv.classList.contains('collapsed'));
+  goBackToCollections_() {
+    this.collectionState_ = null;
+    this.renderStack_();
   }
 
-  // TODO: Do this better so that each change of state doesn't require a complete re-render?
-  /** @private */
-  renderStack_() {
-    const renderedContainerMap = new Map();
-    const libDiv = getElem('readingStackContents');
-    // Clear out the current reading stack HTML divs.
+  renderCollections_(libDiv, collections) {
+    const coversDiv = document.createElement('div');
+    coversDiv.className = 'readingStackCovers';
+    collections.forEach(collection => {
+      const book = collection.entries[0];
+      if (!book) return;
+
+      const clickHandler = () => {
+        this.collectionState_ = collection;
+        this.renderStack_();
+      };
+      const coverDiv = this.createCoverDiv_(book, clickHandler);
+      coverDiv.querySelector('p').textContent = collection.name;
+      coversDiv.appendChild(coverDiv);
+    });
+    libDiv.appendChild(coversDiv);
+  }
+
+  renderCollection_(libDiv, collection) {
     libDiv.innerHTML = '';
-    const topDiv = document.createElement('div');
-    // TODO: Do this out of the rendering thread and send ~200 books at a time into the DOM.
-    if (this.books_.length > 0) {
-      for (let i = 0; i < this.books_.length; ++i) {
-        let curDiv = topDiv;
-        let indentLevel = 0;
-        const book = this.books_[i];
 
-        // If this book's containers have not been rendered yet, go up the ancestry and render
-        // all its unrendered containers in order.
-        if (book.getContainer()) {
-          let ancestors = [];
+    const backButton = document.createElement('button');
+    backButton.textContent = 'Back to Collections';
+    backButton.addEventListener('click', () => this.goBackToCollections_());
+    libDiv.appendChild(backButton);
 
-          // Find all ancestors and the indent-level of the book.
-          let cur = book.getContainer();
-          while (cur) {
-            ancestors.push(cur);
-            cur = cur.getContainer();
-          }
-          indentLevel = ancestors.length;
+    const coversDiv = document.createElement('div');
+    coversDiv.className = 'readingStackCovers';
 
-          // Now, in reverse order, render the ancestors.
-          for (let i = ancestors.length - 1; i >= 0; --i) {
-            const ancestor = ancestors[i];
-            // Only render containers that haven't already been rendered.
-            if (!renderedContainerMap.has(ancestor)) {
-              const folderDiv = document.createElement('div');
-              folderDiv.classList.add('readingStackFolder');
-              folderDiv.innerHTML = `<span class="folderLabel">
-                  <span class="indenter">${'&nbsp;&nbsp;&nbsp;'.repeat(ancestors.length - 1 - i)}</span>
-                  <span class="zippyButton"></span>`;
-              const folderNameSpan = document.createElement('span');
-              folderNameSpan.className = 'folderName';
-              folderNameSpan.textContent = ancestor.getName();
-              folderDiv.appendChild(folderNameSpan);
-              const zippyButtonEl = folderDiv.querySelector('span.zippyButton');
-              zippyButtonEl.addEventListener('click', (evt) => this.toggleFolderExpandCollapse_(folderDiv, ancestor));
-              if (this.folderCollapsedMap_.get(ancestor) === true) {
-                this.toggleFolderExpandCollapse_(folderDiv, ancestor);
-              }
-              curDiv.appendChild(folderDiv);
-              renderedContainerMap.set(ancestor, folderDiv);
-            }
-            curDiv = renderedContainerMap.get(ancestor);
-          }
+    collection.entries.forEach(book => {
+      const clickHandler = () => {
+        const bookIndex = this.books_.indexOf(book);
+        this.changeToBook_(bookIndex);
+      };
+      const coverDiv = this.createCoverDiv_(book, clickHandler);
+      coversDiv.appendChild(coverDiv);
+    });
+    libDiv.appendChild(coversDiv);
+  }
 
-          curDiv = renderedContainerMap.get(book.getContainer());
-        }
+  renderStack_() {
+    const libDiv = getElem('readingStackContents');
+    libDiv.innerHTML = '';
 
-        const bookDiv = document.createElement('div');
-        bookDiv.classList.add('readingStackBook');
-        if (!book.needsLoading()) {
-          bookDiv.classList.add('loaded');
-        }
-        if (this.currentBookNum_ == i) {
-          bookDiv.classList.add('current');
-        }
-        bookDiv.dataset.index = i;
-        bookDiv.innerHTML =
-          '<div class="readingStackBookInner" title="' + book.getName() + '">' +
-          '&nbsp;&nbsp;&nbsp;'.repeat(indentLevel) +
-          book.getName() +
-          '</div>' +
-          '<div class="readingStackBookCloseButton" title="Remove book from stack">x</div>';
-
-        // Handle drag-drop of books.
-        // TODO: Fix this or disable it for books in containers.
-        bookDiv.setAttribute('draggable', 'true');
-        bookDiv.addEventListener('dragstart', evt => {
-          evt.stopPropagation();
-          const thisBookDiv = evt.target;
-          thisBookDiv.classList.add('dragging');
-          evt.dataTransfer.effectAllowed = 'move';
-          evt.dataTransfer.setData('text/plain', thisBookDiv.dataset.index);
-        });
-        bookDiv.addEventListener('dragend', evt => {
-          evt.stopPropagation();
-          evt.target.classList.remove('dragging');
-        });
-        bookDiv.addEventListener('dragenter', evt => {
-          evt.stopPropagation();
-          evt.target.classList.add('dropTarget');
-        });
-        bookDiv.addEventListener('dragleave', evt => {
-          evt.stopPropagation();
-          evt.target.classList.remove('dropTarget');
-        });
-        bookDiv.addEventListener('dragover', evt => {
-          evt.stopPropagation();
-          evt.preventDefault();
-        });
-        bookDiv.addEventListener('drop', evt => {
-          evt.stopPropagation();
-
-          const dropBookDiv = evt.target;
-          const fromIndex = parseInt(evt.dataTransfer.getData('text/plain'), 10);
-          const toIndex = parseInt(dropBookDiv.dataset.index, 10);
-
-          if (fromIndex !== toIndex) {
-            const draggedBook = this.books_[fromIndex];
-            const currentBook = this.books_[this.currentBookNum_];
-            this.books_.splice(fromIndex, 1);
-            this.books_.splice(toIndex, 0, draggedBook);
-            this.currentBookNum_ = this.books_.indexOf(currentBook);
-            this.renderStack_();
-          }
-        });
-
-        bookDiv.addEventListener('click', (evt) => {
-          const i = parseInt(evt.currentTarget.dataset.index, 10);
-          if (evt.target.classList.contains('readingStackBookCloseButton')) {
-            this.removeBook(i);
-          } else {
-            this.changeToBook_(i);
-          }
-        });
-        curDiv.appendChild(bookDiv);
-      }
-      libDiv.appendChild(topDiv);
+    if (this.collectionState_) {
+      this.renderCollection_(libDiv, this.collectionState_);
     } else {
-      libDiv.innerHTML = 'No books loaded';
-      // TODO: Display a label indicating no books loaded again.
+      const collections = new Map();
+      const singleBooks = [];
+      this.books_.forEach(book => {
+        const container = book.getContainer();
+        if (container) {
+          if (!collections.has(container.name)) {
+            collections.set(container.name, {
+              name: container.name,
+              entries: [],
+            });
+          }
+          collections.get(container.name).entries.push(book);
+        } else {
+          singleBooks.push(book);
+        }
+      });
+
+      if (collections.size > 0) {
+        this.renderCollections_(libDiv, Array.from(collections.values()));
+      }
+
+      if (singleBooks.length > 0) {
+        const singleBooksDiv = document.createElement('div');
+        singleBooksDiv.className = 'readingStackSingleBooks';
+        libDiv.appendChild(singleBooksDiv);
+        this.renderSingleBooks_(singleBooksDiv, singleBooks);
+      }
     }
+  }
+
+  createCoverDiv_(book, clickHandler) {
+    const coverDiv = document.createElement('div');
+    coverDiv.className = 'readingStackBook';
+    const img = document.createElement('img');
+    const p = document.createElement('p');
+    p.textContent = book.getName();
+    coverDiv.appendChild(img);
+    coverDiv.appendChild(p);
+
+    if (book.needsLoading()) {
+      book.load().then(() => {
+        const page = book.getPage(0);
+        if (page.getURI) {
+          img.src = page.getURI();
+        } else {
+          page.inflate().then(uri => img.src = uri);
+        }
+      });
+    } else {
+      const page = book.getPage(0);
+      if (page.getURI) {
+        img.src = page.getURI();
+      } else {
+        page.inflate().then(uri => img.src = uri);
+      }
+    }
+
+    coverDiv.addEventListener('click', clickHandler);
+    return coverDiv;
+  }
+
+  renderSingleBooks_(libDiv, books) {
+    const coversDiv = document.createElement('div');
+    coversDiv.className = 'readingStackCovers';
+    books.forEach(book => {
+      const clickHandler = () => {
+        const bookIndex = this.books_.indexOf(book);
+        this.changeToBook_(bookIndex);
+      };
+      const coverDiv = this.createCoverDiv_(book, clickHandler);
+      coversDiv.appendChild(coverDiv);
+    });
+    libDiv.appendChild(coversDiv);
   }
 }
