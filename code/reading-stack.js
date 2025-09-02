@@ -310,16 +310,19 @@ export class ReadingStack {
   renderCollections_(libDiv, collections) {
     const coversDiv = document.createElement('div');
     coversDiv.className = 'readingStackCovers';
-    collections.forEach(collection => {
-      const book = collection.entries[0];
+    collections.forEach((books, container) => {
+      const book = books[0];
       if (!book) return;
 
       const clickHandler = () => {
-        this.collectionState_ = collection;
+        this.collectionState_ = {
+          name: container.getName(),
+          entries: books,
+        };
         this.renderStack_();
       };
       const coverDiv = this.createCoverDiv_(book, clickHandler);
-      coverDiv.querySelector('p').textContent = collection.name;
+      coverDiv.querySelector('p').textContent = container.getName();
       coversDiv.appendChild(coverDiv);
     });
     libDiv.appendChild(coversDiv);
@@ -347,6 +350,15 @@ export class ReadingStack {
     libDiv.appendChild(coversDiv);
   }
 
+  getTopLevelContainer_(book) {
+    let container = book.getContainer();
+    if (!container) return null;
+    while (container.getContainer()) {
+      container = container.getContainer();
+    }
+    return container;
+  }
+
   renderStack_() {
     const libDiv = getElem('readingStackContents');
     libDiv.innerHTML = '';
@@ -357,22 +369,19 @@ export class ReadingStack {
       const collections = new Map();
       const singleBooks = [];
       this.books_.forEach(book => {
-        const container = book.getContainer();
-        if (container) {
-          if (!collections.has(container.name)) {
-            collections.set(container.name, {
-              name: container.name,
-              entries: [],
-            });
+        const topLevelContainer = this.getTopLevelContainer_(book);
+        if (topLevelContainer) {
+          if (!collections.has(topLevelContainer)) {
+            collections.set(topLevelContainer, []);
           }
-          collections.get(container.name).entries.push(book);
+          collections.get(topLevelContainer).push(book);
         } else {
           singleBooks.push(book);
         }
       });
 
       if (collections.size > 0) {
-        this.renderCollections_(libDiv, Array.from(collections.values()));
+        this.renderCollections_(libDiv, collections);
       }
 
       if (singleBooks.length > 0) {
@@ -381,6 +390,10 @@ export class ReadingStack {
         libDiv.appendChild(singleBooksDiv);
         this.renderSingleBooks_(singleBooksDiv, singleBooks);
       }
+    }
+
+    if (libDiv.innerHTML === '') {
+      libDiv.innerHTML = 'No books loaded';
     }
   }
 
@@ -393,22 +406,21 @@ export class ReadingStack {
     coverDiv.appendChild(img);
     coverDiv.appendChild(p);
 
-    if (book.needsLoading()) {
-      book.load().then(() => {
-        const page = book.getPage(0);
+    const loadCover = () => {
+      const page = book.getPage(0);
+      if (page) {
         if (page.getURI) {
           img.src = page.getURI();
         } else {
           page.inflate().then(uri => img.src = uri);
         }
-      });
-    } else {
-      const page = book.getPage(0);
-      if (page.getURI) {
-        img.src = page.getURI();
-      } else {
-        page.inflate().then(uri => img.src = uri);
       }
+    };
+
+    if (book.needsLoading()) {
+      book.load().then(loadCover);
+    } else {
+      loadCover();
     }
 
     coverDiv.addEventListener('click', clickHandler);
