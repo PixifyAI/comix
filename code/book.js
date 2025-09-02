@@ -164,15 +164,13 @@ export class Book extends EventTarget {
 
     // Throw some error if none of #uri, #request, #file, #fileHandle are set?
 
-    if (this.#file || this.#fileHandle) {
-      this.addEventListener(BookEventType.BINDING_COMPLETE, () => {
-        db.saveBook(this).then(() => {
-          console.log(`${this.getName()} has been auto-saved for offline use.`);
-        }).catch(err => {
-          console.error(`Could not auto-save ${this.getName()} for offline use.`, err);
-        });
+    this.addEventListener(BookEventType.BINDING_COMPLETE, () => {
+      db.saveBook(this).then(() => {
+        console.log(`${this.getName()} has been auto-saved for offline use.`);
+      }).catch(err => {
+        console.error(`Could not auto-save ${this.getName()} for offline use.`, err);
       });
-    }
+    });
   }
 
   /**
