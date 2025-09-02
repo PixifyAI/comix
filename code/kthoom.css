@@ -11,8 +11,8 @@
 
 body {
   animation: fadeIn ease 1.5s;
-	background: #333;
-	color: #ddd;
+	background: #111;
+	color: #eee;
 	font-family: sans-serif;
 	margin: 0px;
   scroll-behavior: smooth;
@@ -54,7 +54,7 @@ body {
 }
 
 #helpOverlayInner {
-  background-color: rgba(34, 34, 34, 0.95);
+  background-color: rgba(0, 0, 0, 0.95);
   bottom: 25px;
   left: 50px;
   right: 50px;
@@ -119,10 +119,10 @@ dl.helplist dd {
 }
 
 .navbutton {
-  background-color: #222;
-  border-color: #888;
+  background-color: #000;
+  border-color: #aaa;
   border-radius: 5px;
-  color: #888;
+  color: #aaa;
   cursor: pointer;
   font-weight: bold;
   height: 2em;
@@ -132,11 +132,11 @@ dl.helplist dd {
 }
 
 .navbutton:disabled {
-  color: #333;
+  color: #222;
 }
 
 .navbutton:hover:not([disabled]), .navbutton:focus {
-  background-color: #333;
+  background-color: #222;
   border-color: #007fff;
   color: #007fff;
 }
@@ -178,10 +178,10 @@ dl.helplist dd {
 /* Menu styling */
 
 .menuButton {
-  background-color: #222;
-  border: solid 1px #888;
+  background-color: #000;
+  border: solid 1px #aaa;
   border-radius: 5px;
-  color: #888;
+  color: #aaa;
   cursor: pointer;
   display: inline-block;
   padding: 0;
@@ -236,7 +236,7 @@ span.menuCheckmark {
 }
 
 ul.menuItems {
-  background-color: #222;
+  background-color: #000;
   border: solid 1px #007fff;
   border-radius: 5px 5px 5px 5px;
   left: 5px;
@@ -256,7 +256,7 @@ ul.menuItems li {
 }
 
 .menuItem {
-  background-color: #222;
+  background-color: #000;
   border: none;
   color: #007fff;
   cursor: pointer;
@@ -276,7 +276,7 @@ ul.menuItems li {
 }
 
 .menuItem:hover {
-  background-color: #333;
+  background-color: #222;
 }
 
 #menu-open-local-files input {
@@ -307,7 +307,7 @@ div.pageDiv {
   position: relative;
   top: 10px;
   background: #ccc;
-  color: #222;
+  color: #000;
   margin-right: auto;
   margin-left: auto;
   padding: 10px;
@@ -329,9 +329,9 @@ button:focus {
 
 /** Trays common styling */
 .tray {
-  border-color: #888;
+  border-color: #aaa;
   bottom: 1.5em;
-  color: #888;
+  color: #aaa;
   cursor: pointer;
   display: -ms-flex;
   display: -webkit-flex;
@@ -347,7 +347,7 @@ button:focus {
   -ms-align-self: center;
   -webkit-align-self: center;
   align-self: center;
-  background-color: #222;
+  background-color: #000;
   border-color: inherit;
   border-style: solid;
   border-width: 1px;
@@ -362,7 +362,7 @@ button:focus {
 }
 
 .trayContents {
-  background-color: #222;
+  background-color: #000;
   border-color: inherit;
   border-radius: 5px;
   border-style: solid;
@@ -373,13 +373,13 @@ button:focus {
   overflow-x: hidden;
   padding: 10px;
   padding-bottom: 0;
-  scrollbar-color: #007fff #333;
+  scrollbar-color: #007fff #222;
   text-align: left;
   white-space: nowrap;
 }
 
 .trayContents::-webkit-scrollbar-track {
-  background-color: #333;
+  background-color: #222;
 }
 
 .trayContents::-webkit-scrollbar-thumb {
@@ -400,7 +400,7 @@ button:focus {
 }
 
 #readingStackButton:disabled {
-  color: #333;
+  color: #222;
 }
 
 #readingStackButton.hidden {
@@ -408,7 +408,7 @@ button:focus {
 }
 
 #readingStackButton:hover:not([disabled]), #readingStackButton:focus {
-  background-color: #333;
+  background-color: #222;
   color: #007fff;
   border-color: #007fff;
 }
@@ -432,14 +432,14 @@ button:focus {
 }
 
 .readingStackBook {
-  border-bottom: solid 1px #888;
-  border-top: solid 1px #222;
+  border-bottom: solid 1px #aaa;
+  border-top: solid 1px #000;
   overflow: hidden;
   padding: 4px;
 }
 
 .readingStackBook:hover {
-  background-color: #333;
+  background-color: #222;
   border-bottom: solid 1px #007fff;
   border-top: solid 1px #007fff;
 }
@@ -510,10 +510,10 @@ button:focus {
 }
 
 .metadataButton {
-  background-color: #222;
-  border: solid 1px #888;
+  background-color: #000;
+  border: solid 1px #aaa;
   border-radius: 5px;
-  color: #888;
+  color: #aaa;
   font-weight: bold;
   padding: 0;
   height: 2.5em;
@@ -539,7 +539,7 @@ button:focus {
 }
 
 .readingStackBookCloseButton {
-  color: #222;
+  color: #000;
   float: right;
   font-weight: bold;
 }
