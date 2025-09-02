@@ -91,6 +91,16 @@ class Database {
       request.onerror = (event) => reject(event.target.error);
     });
   }
+
+  deleteAllBooks() {
+    return new Promise((resolve, reject) => {
+      const transaction = this.db_.transaction([BOOK_STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(BOOK_STORE_NAME);
+      const request = store.clear();
+      request.onsuccess = () => resolve();
+      request.onerror = (event) => reject(event.target.error);
+    });
+  }
 }
 
 export const db = new Database();
