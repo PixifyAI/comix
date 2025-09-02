@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>kthoom Comic Reader</title>
+  <title>ComiX</title>
   <link rel="stylesheet" href="code/kthoom.css" type="text/css" />
   <link rel="icon" type="image/png" href="images/logo.png" sizes="300x300" />
   <link rel="apple-touch-icon" href="images/logo.png" />
@@ -16,7 +16,7 @@
   <meta charset="utf-8">
   <meta name="Description" content="Open source comic book reader built using web technologies." />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#ffff00" />
+  <meta name="theme-color" content="#222" />
 
   <!-- The crossorigin attribute is needed so that credentials are forwarded through UberProxy -->
   <script type="module" src="code/main.js" crossorigin="use-credentials"></script>
@@ -41,39 +41,39 @@
         <svg id="svgprogress" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
           <defs>
             <pattern id="load_progress_pattern" width="30" height="20" patternUnits="userSpaceOnUse">
-              <rect width="100%" height="100%" fill="#660000"></rect>
-              <polygon fill="#777700" points="15,0 30,0 15,20 0,20"></polygon>
+              <rect width="100%" height="100%" fill="#004488"></rect>
+              <polygon fill="#555" points="15,0 30,0 15,20 0,20"></polygon>
             </pattern>
             <pattern id="zip_progress_pattern" width="30" height="20" patternUnits="userSpaceOnUse">
-              <rect width="100%" height="100%" fill="#990000"></rect>
-              <polygon fill="#aaaa00" points="15,0 30,0 15,20 0,20"></polygon>
+              <rect width="100%" height="100%" fill="#0055aa"></rect>
+              <polygon fill="#777" points="15,0 30,0 15,20 0,20"></polygon>
             </pattern>
             <pattern id="layout_progress_pattern" width="30" height="20" patternUnits="userSpaceOnUse">
-              <rect width="100%" height="100%" fill="#cc2929"></rect>
-              <polygon fill="#ffff00" points="15,0 30,0 15,20 0,20"></polygon>
+              <rect width="100%" height="100%" fill="#007fff"></rect>
+              <polygon fill="#ddd" points="15,0 30,0 15,20 0,20"></polygon>
             </pattern>
           </defs>
           <g>
-            <rect id="border" y="1" width="100%" height="15" fill="#777" stroke="white" rx="5" ry="5"></rect>
+            <rect id="border" y="1" width="100%" height="15" fill="#777" stroke="#ddd" rx="5" ry="5"></rect>
             <rect id="loadmeter" class="meter" width="0%" height="17" fill="url(#load_progress_pattern)" rx="5" ry="5">
             </rect>
             <rect id="zipmeter" class="meter" width="0%" height="17" fill="url(#zip_progress_pattern)" rx="5" ry="5">
             </rect>
             <!-- Progress text is hidden by layout meter once layout reaches 100%. -->
-            <rect id="progress_bkgnd" x="95%" y="0.5" width="14ex" height="16" fill="black" stroke="none" rx="5" ry="5"
+            <rect id="progress_bkgnd" x="95%" y="0.5" width="14ex" height="16" fill="#222" stroke="none" rx="5" ry="5"
               fill-opacity="0.6"></rect>
-            <text id="progress_title" y="13" x="99.5%" fill="white" font-size="12px" text-anchor="end">0%</text>
-            <rect id="throbber_0" y="1" x="3%" width="4%" height="15" fill="#cc2929" transform="skewX(-45)"></rect>
-            <rect id="throbber_1" y="1" x="31%" width="4%" height="15" fill="#ffff00" transform="skewX(-45)"></rect>
-            <rect id="throbber_2" y="1" x="62%" width="4%" height="15" fill="#cc2929" transform="skewX(-45)"></rect>
-            <rect id="throbber_3" y="1" x="91%" width="4%" height="15" fill="#ffff00" transform="skewX(-45)"></rect>
+            <text id="progress_title" y="13" x="99.5%" fill="#ddd" font-size="12px" text-anchor="end">0%</text>
+            <rect id="throbber_0" y="1" x="3%" width="4%" height="15" fill="#007fff" transform="skewX(-45)"></rect>
+            <rect id="throbber_1" y="1" x="31%" width="4%" height="15" fill="#ddd" transform="skewX(-45)"></rect>
+            <rect id="throbber_2" y="1" x="62%" width="4%" height="15" fill="#007fff" transform="skewX(-45)"></rect>
+            <rect id="throbber_3" y="1" x="91%" width="4%" height="15" fill="#ddd" transform="skewX(-45)"></rect>
             <rect id="layoutmeter" class="meter" width="0%" height="17" fill="url(#layout_progress_pattern)" rx="5"
               ry="5"></rect>
             <rect id="pagemeter" class="meter" width="0%" height="17" opacity="0.8" fill="#007fff" rx="5" ry="5"></rect>
             <!-- Page text is on top of all the meters. -->
-            <rect id="page_bkgnd" y="0.5" width="4ex" height="16" fill="black" stroke="none" rx="5" ry="5"
+            <rect id="page_bkgnd" y="0.5" width="4ex" height="16" fill="#222" stroke="none" rx="5" ry="5"
               fill-opacity="0.6"></rect>
-            <text id="page" y="13" x="0.5%" fill="white" font-size="12px">0/0</text>
+            <text id="page" y="13" x="0.5%" fill="#ddd" font-size="12px">0/0</text>
           </g>
         </svg>
       </div>
@@ -132,9 +132,9 @@
     <div id="metadataViewer" class="tray">
       <button id="metadataViewerButton" class="trayButton" title="Metadata Viewer" aria-label="Metadata Viewer button">
         <svg fill="currentColor" viewBox="-20 0 275 275" width="30" height="50">
-          <polygon points="255,155 110,10 10,10 10,110 155,255" stroke="black" stroke-linejoin="round" />
-          <circle cx="66.5" cy="67" r="22.5" fill="black" stroke="none" />
-          <circle id="metadataIsPresent" cx="200" cy="30" r="30" fill="yellow" stroke="black" style="display:none"/>
+          <polygon points="255,155 110,10 10,10 10,110 155,255" stroke="#222" stroke-linejoin="round" />
+          <circle cx="66.5" cy="67" r="22.5" fill="#222" stroke="none" />
+          <circle id="metadataIsPresent" cx="200" cy="30" r="30" fill="#007fff" stroke="#222" style="display:none"/>
         </svg>        
       </button>
       <div class="trayContents">
