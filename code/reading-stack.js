@@ -307,22 +307,27 @@ export class ReadingStack {
     this.renderStack_();
   }
 
-  renderCollections_(libDiv, collections) {
+  renderCollections_(libDiv, collections, title) {
     const coversDiv = document.createElement('div');
     coversDiv.className = 'readingStackCovers';
+    if (title) {
+      const titleDiv = document.createElement('h3');
+      titleDiv.textContent = title;
+      libDiv.appendChild(titleDiv);
+    }
     collections.forEach((books, container) => {
       const book = books[0];
       if (!book) return;
 
       const clickHandler = () => {
         this.collectionState_ = {
-          name: container.getName(),
+          name: container.getName ? container.getName() : container,
           entries: books,
         };
         this.renderStack_();
       };
       const coverDiv = this.createCoverDiv_(book, clickHandler);
-      coverDiv.querySelector('p').textContent = container.getName();
+      coverDiv.querySelector('p').textContent = container.getName ? container.getName() : container;
       coversDiv.appendChild(coverDiv);
     });
     libDiv.appendChild(coversDiv);
@@ -359,6 +364,39 @@ export class ReadingStack {
     return container;
   }
 
+  groupBooksByName_(books) {
+    const collections = new Map();
+    const singleBooks = [];
+
+    books.forEach(book => {
+      let name = book.getName().replace(/\.(cbz|cbr|cbt)$/i, '').trim();
+      // A very simple heuristic to find a series name.
+      const lastSpace = name.lastIndexOf(' ');
+      if (lastSpace !== -1) {
+        const lastPart = name.substring(lastSpace + 1);
+        if (isFinite(lastPart)) {
+          const seriesName = name.substring(0, lastSpace).trim();
+          if (!collections.has(seriesName)) {
+            collections.set(seriesName, []);
+          }
+          collections.get(seriesName).push(book);
+          return;
+        }
+      }
+      singleBooks.push(book);
+    });
+
+    // Move single-issue series to single books
+    collections.forEach((bookList, seriesName) => {
+      if (bookList.length <= 1) {
+        singleBooks.push(...bookList);
+        collections.delete(seriesName);
+      }
+    });
+
+    return { collections, singleBooks };
+  }
+
   renderStack_() {
     const libDiv = getElem('readingStackContents');
     libDiv.innerHTML = '';
@@ -366,26 +404,38 @@ export class ReadingStack {
     if (this.collectionState_) {
       this.renderCollection_(libDiv, this.collectionState_);
     } else {
-      const collections = new Map();
-      const singleBooks = [];
+      const folderCollections = new Map();
+      const booksForNameGrouping = [];
+
       this.books_.forEach(book => {
         const topLevelContainer = this.getTopLevelContainer_(book);
         if (topLevelContainer) {
-          if (!collections.has(topLevelContainer)) {
-            collections.set(topLevelContainer, []);
+          if (!folderCollections.has(topLevelContainer)) {
+            folderCollections.set(topLevelContainer, []);
           }
-          collections.get(topLevelContainer).push(book);
+          folderCollections.get(topLevelContainer).push(book);
         } else {
-          singleBooks.push(book);
+          booksForNameGrouping.push(book);
         }
       });
 
-      if (collections.size > 0) {
-        this.renderCollections_(libDiv, collections);
+      if (folderCollections.size > 0) {
+        this.renderCollections_(libDiv, folderCollections, 'Folders');
+      }
+
+      const { collections: nameCollections, singleBooks } = this.groupBooksByName_(booksForNameGrouping);
+
+      if (nameCollections.size > 0) {
+        this.renderCollections_(libDiv, nameCollections, 'Series');
       }
 
       if (singleBooks.length > 0) {
         const singleBooksDiv = document.createElement('div');
+        if (folderCollections.size > 0 || nameCollections.size > 0) {
+          const titleDiv = document.createElement('h3');
+          titleDiv.textContent = 'Single Issues';
+          singleBooksDiv.appendChild(titleDiv);
+        }
         singleBooksDiv.className = 'readingStackSingleBooks';
         libDiv.appendChild(singleBooksDiv);
         this.renderSingleBooks_(singleBooksDiv, singleBooks);

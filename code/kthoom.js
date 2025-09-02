@@ -950,57 +950,29 @@ export class KthoomApp {
           `Handles array not the same length as Files array.`);
     }
 
-    const topLevelContainers = new Map();
-    const singleBooks = [];
-    const containerMap = new Map();
-
-    for (let i = 0; i < filelist.length; ++i) {
-      const theFile = filelist[i];
-      const handleOrFile = evt.handles ? evt.handles[i] : theFile;
-
+    for (let fileNum = 0; fileNum < filelist.length; ++fileNum) {
+      const theFile = filelist[fileNum];
+      // First, try to load the file as a JSON Reading List.
       if (theFile.name.toLowerCase().endsWith('.jrl')) {
-        // Handle JRL files separately
         try {
           const readingList = await this.loadAndParseReadingList_(theFile);
           this.loadBooksFromReadingList_(readingList);
-        } catch (e) {
-          console.error('Failed to load JRL file', e);
-        }
-        continue;
+          continue;
+        } catch { }
       }
 
-      const path = theFile.webkitRelativePath;
-      if (path && path.includes('/')) {
-        const pathParts = path.split('/');
-        let parentContainer = null;
-        let currentPath = '';
-
-        for (let j = 0; j < pathParts.length - 1; ++j) {
-          const part = pathParts[j];
-          currentPath += part + '/';
-          let container = containerMap.get(currentPath);
-          if (!container) {
-            container = new BookContainer(part, null, parentContainer);
-            containerMap.set(currentPath, container);
-            if (parentContainer) {
-              parentContainer.entries.push(container);
-            } else {
-              topLevelContainers.set(currentPath, container);
-            }
-          }
-          parentContainer = container;
-        }
-        const book = new Book(theFile.name, handleOrFile, parentContainer);
-        if (parentContainer) {
-          parentContainer.entries.push(book);
-        }
+      // Else, assume the file is a single book and try to load the first one.
+      const handleOrFile = evt.handles ? evt.handles[fileNum] : theFile;
+      const singleBook = new Book(theFile.name, handleOrFile);
+      // If we have no books open, then always switch to the first one.
+      if (this.readingStack_.getNumberOfBooks() === 0) {
+        this.loadBooksFromPromises_([singleBook.load()]);
+        this.readingStack_.addBook(singleBook, true);
       } else {
-        singleBooks.push(new Book(theFile.name, handleOrFile));
+        // If it was only one book, then switch to it, even if the reading stack is populated.
+        this.readingStack_.addBook(singleBook, filelist.length === 1);
       }
     }
-
-    topLevelContainers.forEach(container => this.readingStack_.addFolder(container));
-    singleBooks.forEach(book => this.readingStack_.addBook(book, filelist.length === 1));
   }
 
   /** Attempts to open all the files recursively? */
