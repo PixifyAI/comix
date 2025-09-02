@@ -40,6 +40,9 @@ class Database {
    * @returns {Promise<void>}
    */
   async saveBook(book) {
+    if (!this.db_) {
+      await this.open();
+    }
     const bookName = book.getName();
     const bookData = await book.getArrayBuffer();
     return new Promise((resolve, reject) => {
