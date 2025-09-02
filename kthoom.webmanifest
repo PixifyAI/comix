@@ -1,7 +1,8 @@
 {
   "name": "ComiX",
-  "description": "A comic book reader.",
+  "description": "A comic book reader that works offline.",
   "short_name": "ComiX",
+  "scope": ".",
   "icons": [
     {
       "src": "images/logo-192.png",
@@ -27,5 +28,5 @@
   "display": "standalone",
   "background_color": "#222",
   "theme_color": "#222",
-  "start_url": "/kthoom/index.html"
+  "start_url": "./index.html"
 }

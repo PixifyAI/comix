@@ -244,6 +244,18 @@
         </button>
       </li>
       <li role="none">
+        <button id="menu-save-offline" style="display:none" class="menuItem"
+                role="menuitem" tabindex="-1" aria-expanded="false">
+          <span class="menuItemText">Save for Offline</span>
+        </button>
+      </li>
+      <li role="none">
+        <button id="menu-delete-offline" style="display:none" class="menuItem"
+                role="menuitem" tabindex="-1" aria-expanded="false">
+          <span class="menuItemText">Delete from Offline</span>
+        </button>
+      </li>
+      <li role="none">
         <button id="menu-close-all" style="display:none" disabled="true" class="menuItem"
                 role="menuitem" tabindex="-1">
           <span class="menuItemText">Close All</span>
@@ -303,6 +315,11 @@
         <button id="menu-open-ipfs-hash" class="menuItem" role="menuitem" tabindex="-1">
           <span class="menuItemText">Open from IPFS</span>
           <span class="menuItemKey">I</span>
+        </button>
+      </li>
+      <li role="none">
+        <button id="menu-open-offline" class="menuItem" role="menuitem" tabindex="-1">
+          <span class="menuItemText">Open from Offline</span>
         </button>
       </li>
     </ul>
@@ -428,15 +445,17 @@
   </template>
 </body>
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-    .then((registration) => {      
-      console.log(`Registered: ${registration}`);
-    })
-    .catch((error) => {
-      console.log(`Registration failed: ${error}`);
-    });
-  }  
+  window.addEventListener('load', () => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then((registration) => {
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        })
+        .catch((error) => {
+          console.log('ServiceWorker registration failed: ', error);
+        });
+    }
+  });
 </script>
 
 <!-- Google tag (gtag.js) -->
