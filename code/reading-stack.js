@@ -8,6 +8,7 @@
 import { getElem, Params } from './common/helpers.js';
 import { Book, BookContainer } from './book.js';
 import { BookEventType } from './book-events.js';
+import { db } from './database.js';
 
 // TODO: Have the ReadingStack display progress bars in the pane as books load and unarchive.
 
@@ -180,6 +181,19 @@ export class ReadingStack {
         }
         this.renderStack_();
       }
+    }
+  }
+
+  async deleteBook_(book) {
+    const bookName = book.getName();
+    try {
+      await db.deleteBook(bookName);
+      const index = this.books_.indexOf(book);
+      if (index !== -1) {
+        this.removeBook(index);
+      }
+    } catch (err) {
+      console.error(`Could not delete ${bookName} from offline storage.`, err);
     }
   }
 
@@ -450,6 +464,15 @@ export class ReadingStack {
   createCoverDiv_(book, clickHandler) {
     const coverDiv = document.createElement('div');
     coverDiv.className = 'readingStackBook';
+
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'deleteBookButton';
+    deleteButton.textContent = 'X';
+    deleteButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.deleteBook_(book);
+    });
+    coverDiv.appendChild(deleteButton);
     const img = document.createElement('img');
     const p = document.createElement('p');
     p.textContent = book.getName();
