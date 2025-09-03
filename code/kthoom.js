@@ -1104,8 +1104,8 @@ export class KthoomApp {
   }
 
   /** @private */
-  downloadBook_() {
-    const ab = this.currentBook_.getArrayBuffer();
+  async downloadBook_() {
+    const ab = await this.currentBook_.getArrayBuffer();
     if (!ab) {
       alert('Could not download a copy of the book. Sorry!');
       return;
@@ -1332,9 +1332,7 @@ export class KthoomApp {
         /** @type {Book} */
         const book = evt.source;
         this.metadataViewer_.setBook(book);
-        if (book === this.currentBook_) {
-          // The book is saved in the Book object's event handler for BINDING_COMPLETE.
-        }
+        db.saveBook(book);
         break;
     }
   }
