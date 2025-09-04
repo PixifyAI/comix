@@ -11,6 +11,7 @@ import { BookEventType, BookLoadingStartedEvent, BookLoadingCompleteEvent,
          BookPageExtractedEvent,
          BookBindingCompleteEvent} from './book-events.js';
 import { BookMetadata, createEmptyMetadata } from './metadata/book-metadata.js';
+import { DatabasePage } from './page.js';
 import { BookPumpEventType } from './book-pump.js';
 import { db } from './database.js';
 import { Params } from './common/helpers.js';
@@ -473,11 +474,19 @@ export class Book extends EventTarget {
     }
 
     const bookName = this.getName();
-    const bookData = await db.getBook(bookName);
-    if (bookData) {
+    const bookMetadata = await db.getBook(bookName);
+    if (bookMetadata && bookMetadata.pageNames) {
       this.#needsLoading = false;
       this.dispatchEvent(new BookLoadingStartedEvent(this));
-      this.#startBookBinding(bookName, bookData, bookData.byteLength);
+
+      this.#pages = bookMetadata.pageNames.map(pageName => new DatabasePage(bookName, pageName));
+      this.#totalPages = this.#pages.length;
+      
+      // Since we are not un-archiving, the book is considered "bound" almost immediately.
+      // The pages will load on demand.
+      this.#finishedBinding = true;
+      this.dispatchEvent(new BookBindingCompleteEvent(this));
+
       this.#finishedLoading = true;
       this.dispatchEvent(new BookLoadingCompleteEvent(this));
       return this;
