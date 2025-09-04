@@ -111,6 +111,9 @@ export class Book extends EventTarget {
   #expectedSize = undefined;
 
   /** @type {boolean} */
+  #dirty = true;
+
+  /** @type {boolean} */
   #finishedBinding = false;
 
   /** @type {boolean} */
@@ -260,6 +263,14 @@ export class Book extends EventTarget {
    */
   isFinishedBinding() {
     return this.#finishedBinding;
+  }
+
+  isDirty() {
+    return this.#dirty;
+  }
+
+  setDirty(dirty) {
+    this.#dirty = dirty;
   }
 
   /**
@@ -488,6 +499,7 @@ export class Book extends EventTarget {
       this.dispatchEvent(new BookBindingCompleteEvent(this));
 
       this.#finishedLoading = true;
+      this.#dirty = false;
       this.dispatchEvent(new BookLoadingCompleteEvent(this));
       return this;
     }
