@@ -121,9 +121,10 @@ export class ComicBookBinder extends BookBinder {
 
         // Emit a complete event.
         this.dispatchEvent(new BookBindingCompleteEvent(this));
-      });
 
-      this.stop();
+        // Stop the unarchiver only after everything is done.
+        this.stop();
+      });
     });
 
     switch (this.unarchiver.getMIMEType()) {
