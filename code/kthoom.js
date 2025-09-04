@@ -425,7 +425,16 @@ export class KthoomApp {
     }
 
     window.addEventListener('beforeunload', (event) => {
-      if (this.readingStack_.getNumberOfBooks() > 0) {
+      let isDirty = false;
+      for (let i = 0; i < this.readingStack_.getNumberOfBooks(); ++i) {
+        const book = this.readingStack_.getBook(i);
+        if (book && book.isDirty()) {
+          isDirty = true;
+          break;
+        }
+      }
+
+      if (isDirty) {
         // Cancel the event as stated by the standard.
         event.preventDefault();
         // Chrome requires returnValue to be set.
@@ -1331,8 +1340,9 @@ export class KthoomApp {
           savePromises.push(db.savePage(book.getName(), book.getPage(i)));
         }
         Promise.all(savePromises)
+          .then(() => db.saveBook(book))
           .then(() => {
-            db.saveBook(book);
+            book.setDirty(false);
             console.log(`${book.getName()} has been auto-saved for offline use.`);
           })
           .catch(err => {
