@@ -121,15 +121,7 @@ export class KthoomApp {
   async loadSavedBooks_() {
     const bookNames = await db.getSavedBookNames();
     if (bookNames && bookNames.length > 0) {
-      const books = [];
-      for (const bookName of bookNames) {
-        const bookData = await db.getBook(bookName);
-        if (bookData) {
-          const book = new Book(bookName);
-          await book.loadFromArrayBuffer(bookName, bookData);
-          books.push(book);
-        }
-      }
+      const books = bookNames.map(bookName => new Book(bookName));
       this.loadMultipleBooks_(books);
     }
   }
@@ -1328,12 +1320,26 @@ export class KthoomApp {
   // Handles all events subscribed to.
   handleEvent(evt) {
     switch (evt.type) {
-      case BookEventType.BINDING_COMPLETE:
+      case BookEventType.BINDING_COMPLETE: {
         /** @type {Book} */
         const book = evt.source;
         this.metadataViewer_.setBook(book);
-        db.saveBook(book);
+
+        // Save all the pages, then save the book metadata.
+        const savePromises = [];
+        for (let i = 0; i < book.getNumberOfPages(); ++i) {
+          savePromises.push(db.savePage(book.getName(), book.getPage(i)));
+        }
+        Promise.all(savePromises)
+          .then(() => {
+            db.saveBook(book);
+            console.log(`${book.getName()} has been auto-saved for offline use.`);
+          })
+          .catch(err => {
+            console.error(`Could not auto-save ${book.getName()} for offline use.`, err);
+          });
         break;
+      }
     }
   }
 
