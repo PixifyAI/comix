@@ -9,6 +9,7 @@
 import { convertWebPtoJPG } from './bitjs/image/webp-shim/webp-shim.js';
 import { findMimeType } from './bitjs/file/sniffer.js';
 import { PageContainer } from './pages/page-container.js';
+import { db } from './database.js';
 
 // This is from Googling, I've seen different numbers.
 const DEFAULT_ASPECT_RATIO = 6.625 / 10.25;
@@ -81,6 +82,68 @@ export class Page {
    */
   renderIntoContainer(pageContainer, pageNum) {
     throw 'Cannot render an abstract Page object into a Pagecontainer, use a subclass.';
+  }
+}
+
+/**
+ * A page that is stored in the database and is loaded on demand.
+ */
+export class DatabasePage extends Page {
+  /**
+   * @param {string} bookName
+   * @param {string} pageName
+   */
+  constructor(bookName, pageName) {
+    // We don't have the data yet, so we pass null for bytes.
+    // We also don't know the mime type yet. This will be determined after loading.
+    super(pageName, 'image/jpeg', null); // Assume jpeg for now.
+    this.bookName_ = bookName;
+    this.pageName_ = pageName;
+    this.dataURI_ = null;
+    this.inflatingPromise_ = null;
+  }
+
+  /** @returns {Promise} A Promise that resolves when the data is loaded. */
+  inflate() {
+    if (this.dataURI_) {
+      return Promise.resolve();
+    } else if (this.inflatingPromise_) {
+      return this.inflatingPromise_;
+    }
+
+    return this.inflatingPromise_ = db.getPage(this.bookName_, this.pageName_)
+      .then(bytes => {
+        this.bytes = bytes;
+        // Sniff the mime type from the bytes.
+        this.mimeType_ = findMimeType(this.bytes) || this.mimeType_;
+        this.dataURI_ = createURLFromArray(this.bytes, this.getMimeType());
+      });
+  }
+
+  isInflated() { return !!this.dataURI_; }
+
+  getURI() {
+    if (!this.isInflated()) {
+      console.warn('Getting URI for a non-inflated DatabasePage');
+    }
+    return this.dataURI_;
+  }
+
+  /**
+   * Renders this page into the page container.
+   * @param {PageContainer} pageContainer
+   * @param {number} pageNum
+   */
+  renderIntoContainer(pageContainer, pageNum) {
+    if (!this.isInflated()) {
+      this.inflate().then(() => {
+        this.inflatingPromise_ = null;
+        this.renderIntoContainer(pageContainer, pageNum);
+      });
+      return;
+    }
+
+    pageContainer.renderRasterImage(this.dataURI_, pageNum);
   }
 }
 
