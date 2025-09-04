@@ -131,13 +131,27 @@ class Database {
    * @param {string} bookName
    * @returns {Promise<void>}
    */
-  deleteBook(bookName) {
+  async deleteBook(bookName) {
+    if (!this.db_) {
+      await this.open();
+    }
+
+    const bookMetadata = await this.getBook(bookName);
+    const pageNames = (bookMetadata && bookMetadata.pageNames) ? bookMetadata.pageNames : [];
+
     return new Promise((resolve, reject) => {
-      const transaction = this.db_.transaction([BOOK_STORE_NAME], 'readwrite');
-      const store = transaction.objectStore(BOOK_STORE_NAME);
-      const request = store.delete(bookName);
-      request.onsuccess = () => resolve();
-      request.onerror = (event) => reject(event.target.error);
+      const transaction = this.db_.transaction([BOOK_STORE_NAME, PAGE_STORE_NAME], 'readwrite');
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = (event) => reject(event.target.error);
+
+      const bookStore = transaction.objectStore(BOOK_STORE_NAME);
+      const pageStore = transaction.objectStore(PAGE_STORE_NAME);
+
+      bookStore.delete(bookName);
+      for (const pageName of pageNames) {
+        const pageKey = `${bookName}:${pageName}`;
+        pageStore.delete(pageKey);
+      }
     });
   }
 
@@ -155,7 +169,7 @@ class Database {
   }
 
   deleteAllBooks() {
-    return this.deleteAllData([BOOK_STORE_NAME]);
+    return this.deleteAllData();
   }
 
   deleteAllData(storeNames) {

@@ -121,8 +121,31 @@ export class KthoomApp {
   async loadSavedBooks_() {
     const bookNames = await db.getSavedBookNames();
     if (bookNames && bookNames.length > 0) {
-      const books = bookNames.map(bookName => new Book(bookName));
-      this.loadMultipleBooks_(books);
+      const booksToLoad = [];
+      for (const bookName of bookNames) {
+        const bookMetadata = await db.getBook(bookName);
+        if (!bookMetadata || !bookMetadata.pageNames) {
+          console.warn(`Book "${bookName}" has invalid metadata, deleting it.`);
+          await db.deleteBook(bookName);
+          continue;
+        }
+
+        const pagePromises = bookMetadata.pageNames.map(pageName => db.getPage(bookName, pageName));
+        const pageDatas = await Promise.all(pagePromises);
+
+        const allPagesExist = pageDatas.every(p => p);
+
+        if (allPagesExist) {
+          booksToLoad.push(new Book(bookName));
+        } else {
+          console.warn(`Book "${bookName}" is corrupted (missing pages), deleting it.`);
+          await db.deleteBook(bookName);
+        }
+      }
+
+      if (booksToLoad.length > 0) {
+        this.loadMultipleBooks_(booksToLoad);
+      }
     }
   }
 
