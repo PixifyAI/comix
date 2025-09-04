@@ -4,3 +4,4 @@ coverage
 gkey.json
 node_modules
 tools/desadulate
+.env
