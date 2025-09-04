@@ -490,7 +490,7 @@ export class Book extends EventTarget {
    * @param {ArrayBuffer} ab
    * @returns {Promise<Book>} A Promise that returns this book when all bytes have been fed to it.
    */
-  loadFromArrayBuffer(fileName, ab) {
+  async loadFromArrayBuffer(fileName, ab) {
     if (!this.#needsLoading) {
       throw 'Cannot try to load via File when the Book is already loading or loaded';
     }
@@ -500,10 +500,10 @@ export class Book extends EventTarget {
 
     this.#needsLoading = false;
     this.dispatchEvent(new BookLoadingStartedEvent(this));
-    this.#startBookBinding(fileName, ab, ab.byteLength);
+    await this.#startBookBinding(fileName, ab, ab.byteLength);
     this.#finishedLoading = true;
     this.dispatchEvent(new BookLoadingCompleteEvent(this));
-    return Promise.resolve(this);
+    return this;
   }
 
   /**

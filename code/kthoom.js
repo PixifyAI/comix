@@ -126,7 +126,7 @@ export class KthoomApp {
         const bookData = await db.getBook(bookName);
         if (bookData) {
           const book = new Book(bookName);
-          book.loadFromArrayBuffer(bookName, bookData);
+          await book.loadFromArrayBuffer(bookName, bookData);
           books.push(book);
         }
       }
