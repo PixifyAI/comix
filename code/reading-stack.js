@@ -8,6 +8,7 @@
 import { getElem, Params } from './common/helpers.js';
 import { Book, BookContainer } from './book.js';
 import { BookEventType } from './book-events.js';
+import { DatabasePage } from './page.js';
 import { db } from './database.js';
 
 // TODO: Have the ReadingStack display progress bars in the pane as books load and unarchive.
@@ -479,14 +480,15 @@ export class ReadingStack {
     coverDiv.appendChild(img);
     coverDiv.appendChild(p);
 
-    const loadCover = () => {
+    const loadCover = async () => {
       const page = book.getPage(0);
       if (page) {
-        if (page.getURI) {
-          img.src = page.getURI();
-        } else {
-          page.inflate().then(uri => img.src = uri);
+        // We need to special-case DatabasePage because its URI is not available until it
+        // has been inflated.
+        if (page instanceof DatabasePage && !page.isInflated()) {
+          await page.inflate();
         }
+        img.src = page.getURI();
       }
     };
 

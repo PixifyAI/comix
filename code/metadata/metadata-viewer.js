@@ -142,20 +142,22 @@ export class MetadataViewer {
       const metadata = this.book_.getMetadata();
       const metadataContents = document.importNode(this.tableTemplate_.content, true);
       const tableElem = metadataContents.querySelector('table.metadataTable');
-      const rowTemplate = getElem('metadataTableRow');
-      for (const [key, value] of metadata.propertyEntries()) {
-        if (key && value) {
-          const rowElem = document.importNode(rowTemplate.content, true);
-          rowElem.querySelector('td.metadataPropName').textContent = key;
-          rowElem.querySelector('td.metadataPropValue').textContent = value;
-          tableElem.appendChild(rowElem);
+      if (metadata) {
+        const rowTemplate = getElem('metadataTableRow');
+        for (const [key, value] of metadata.propertyEntries()) {
+          if (key && value) {
+            const rowElem = document.importNode(rowTemplate.content, true);
+            rowElem.querySelector('td.metadataPropName').textContent = key;
+            rowElem.querySelector('td.metadataPropValue').textContent = value;
+            tableElem.appendChild(rowElem);
+          }
         }
       }
 
       this.contentDiv_.innerHTML = '';
       this.contentDiv_.appendChild(tableElem);
 
-      const hasMetadata = Array.from(metadata.propertyEntries()).length > 0;
+      const hasMetadata = metadata && Array.from(metadata.propertyEntries()).length > 0;
       getElem('metadataIsPresent').style.display = hasMetadata ? '' : 'none';
     } else {
       this.contentDiv_.innerHTML = 'No book loaded';
