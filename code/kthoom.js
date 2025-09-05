@@ -1378,7 +1378,11 @@ export class KthoomApp {
         // Save all the pages, then save the book metadata.
         const savePromises = [];
         for (let i = 0; i < book.getNumberOfPages(); ++i) {
-          savePromises.push(db.savePage(book.getName(), book.getPage(i)));
+          const page = book.getPage(i);
+          // Only save pages that have actual data.
+          if (page.getBytes()) {
+            savePromises.push(db.savePage(book.getName(), page));
+          }
         }
         Promise.all(savePromises)
           .then(() => db.saveBook(book))

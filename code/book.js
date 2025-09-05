@@ -496,7 +496,7 @@ export class Book extends EventTarget {
       // Since we are not un-archiving, the book is considered "bound" almost immediately.
       // The pages will load on demand.
       this.#finishedBinding = true;
-      this.dispatchEvent(new BookBindingCompleteEvent(this));
+      // this.dispatchEvent(new BookBindingCompleteEvent(this));
 
       this.#finishedLoading = true;
       this.#dirty = false;
