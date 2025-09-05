@@ -15,7 +15,7 @@ import { FitMode } from './book-viewer-types.js';
 import { Menu, MenuEventType } from './menu.js';
 import { ReadingStack } from './reading-stack.js';
 import { Key, Params, assert, getElem, serializeParamsToBrowser } from './common/helpers.js';
-import { DatabasePage, ImagePage, WebPShimImagePage } from './page.js';
+import { ImagePage, WebPShimImagePage } from './page.js';
 import { convertWebPtoJPG, convertWebPtoPNG } from './bitjs/image/webp-shim/webp-shim.js';
 import { MetadataViewer } from './metadata/metadata-viewer.js';
 import { db } from './database.js';
@@ -1360,20 +1360,8 @@ export class KthoomApp {
         // Save all the pages, then save the book metadata.
         const savePromises = [];
         for (let i = 0; i < book.getNumberOfPages(); ++i) {
-          const page = book.getPage(i);
-
-          // Create an async IIFE to handle the page saving.
-          const savePromise = (async () => {
-            // If we have a DatabasePage that has not been loaded from the DB, we must
-            // load it now so we can save its bytes.
-            if (page instanceof DatabasePage && !page.isInflated()) {
-              await page.inflate();
-            }
-            return db.savePage(book.getName(), page);
-          })();
-          savePromises.push(savePromise);
+          savePromises.push(db.savePage(book.getName(), book.getPage(i)));
         }
-
         Promise.all(savePromises)
           .then(() => db.saveBook(book))
           .then(() => {

@@ -118,7 +118,10 @@ class Database {
    * @returns {Promise<ArrayBuffer>}
    */
   getBook(bookName) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+      if (!this.db_) {
+        await this.open();
+      }
       const transaction = this.db_.transaction([BOOK_STORE_NAME], 'readonly');
       const store = transaction.objectStore(BOOK_STORE_NAME);
       const request = store.get(bookName);
@@ -159,7 +162,10 @@ class Database {
    * @returns {Promise<string[]>}
    */
   getSavedBookNames() {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+      if (!this.db_) {
+        await this.open();
+      }
       const transaction = this.db_.transaction([BOOK_STORE_NAME], 'readonly');
       const store = transaction.objectStore(BOOK_STORE_NAME);
       const request = store.getAllKeys();
