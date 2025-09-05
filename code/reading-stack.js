@@ -112,27 +112,30 @@ export class ReadingStack {
 
   /**
    * @param {BookContainer} folder
-   * @param {boolean} recursing Whether this is a recursive call.
+   * @param {Array<Book>} books
+   * @private
    */
-  addFolder(folder, recursing = false) {
+  collectBooksFromFolder_(folder, books) {
     let sortedEntries = folder.entries.slice(0);
-    sortedEntries.sort((a, b) => {
-      return a.getName() < b.getName() ? -1 : 1;
-    });
+    // TODO: Use file-system-access sort order if available.
+    sortedEntries.sort((a, b) => a.getName().localeCompare(b.getName()));
     for (const entry of sortedEntries) {
       if (entry instanceof BookContainer) {
-        this.addFolder(entry, true);
-      } else {
-        if (this.books_.length === 0) {
-          this.addBook(entry, true);
-        } else {
-          this.books_.push(entry);
-          entry.addEventListener(BookEventType.LOADING_STARTED, this);
-        }
+        this.collectBooksFromFolder_(entry, books);
+      } else if (entry instanceof Book) {
+        books.push(entry);
       }
     }
-    if (!recursing) {
-      this.renderStack_();
+  }
+
+  /**
+   * @param {BookContainer} folder
+   */
+  addFolder(folder) {
+    const booksToAdd = [];
+    this.collectBooksFromFolder_(folder, booksToAdd);
+    if (booksToAdd.length > 0) {
+      this.addBooks(booksToAdd, 0);
     }
   }
 
