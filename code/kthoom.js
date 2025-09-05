@@ -1000,28 +1000,28 @@ export class KthoomApp {
           `Handles array not the same length as Files array.`);
     }
 
+    const booksToAdd = [];
     for (let fileNum = 0; fileNum < filelist.length; ++fileNum) {
       const theFile = filelist[fileNum];
       // First, try to load the file as a JSON Reading List.
       if (theFile.name.toLowerCase().endsWith('.jrl')) {
         try {
           const readingList = await this.loadAndParseReadingList_(theFile);
-          this.loadBooksFromReadingList_(readingList);
-          continue;
-        } catch { }
-      }
-
-      // Else, assume the file is a single book and try to load the first one.
-      const handleOrFile = evt.handles ? evt.handles[fileNum] : theFile;
-      const singleBook = new Book(theFile.name, handleOrFile);
-      // If we have no books open, then always switch to the first one.
-      if (this.readingStack_.getNumberOfBooks() === 0) {
-        this.loadBooksFromPromises_([singleBook.load()]);
-        this.readingStack_.addBook(singleBook, true);
+          if (readingList && readingList.length > 0) {
+            const books = readingList.map(item => new Book(this.getNameForBook_(item), item.uri));
+            books.forEach(b => booksToAdd.push(b));
+          }
+        } catch (e) {
+          console.error('Failed to parse ' + theFile.name + ' as a reading list. Error: ' + e);
+        }
       } else {
-        // If it was only one book, then switch to it, even if the reading stack is populated.
-        this.readingStack_.addBook(singleBook, filelist.length === 1);
+        const handleOrFile = evt.handles ? evt.handles[fileNum] : theFile;
+        booksToAdd.push(new Book(theFile.name, handleOrFile));
       }
+    }
+
+    if (booksToAdd.length > 0) {
+      this.readingStack_.addBooks(booksToAdd, 0);
     }
   }
 
@@ -1035,12 +1035,30 @@ export class KthoomApp {
     }
 
     const dirHandle = await window.showDirectoryPicker();
-    const topContainer = new BookContainer(dirHandle.name, dirHandle);
-    await this.scanDir_(topContainer);
 
-    // Now topContainer has the entire file system: all comic books and all their
-    // containing folders...
-    this.readingStack_.addFolder(topContainer);
+    // Process subdirectories first.
+    for await (let [name, handle] of dirHandle.entries()) {
+      if (handle.kind === 'directory') {
+        const dirContainer = new BookContainer(name, handle);
+        await this.scanDir_(dirContainer); // scanDir_ is recursive
+        if (dirContainer.entries.length > 0) {
+          this.readingStack_.addFolder(dirContainer);
+        }
+      }
+    }
+
+    // Then process loose files in the top directory.
+    const looseFilesContainer = new BookContainer(dirHandle.name, dirHandle);
+    for await (let [name, handle] of dirHandle.entries()) {
+      if (handle.kind === 'file' &&
+         (name.endsWith('.cbz') || name.endsWith('.cbr') || name.endsWith('.cbt'))) {
+        const singleBook = new Book(name, handle, looseFilesContainer);
+        looseFilesContainer.entries.push(singleBook);
+      }
+    }
+    if (looseFilesContainer.entries.length > 0) {
+      this.readingStack_.addFolder(looseFilesContainer);
+    }
   }
 
   /**
